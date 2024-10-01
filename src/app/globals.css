@@ -3,28 +3,18 @@
 @tailwind utilities;
 
 .container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
+  @apply max-w-[1600px] mx-auto p-8;
 }
 
 .activity-form {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1rem;
-  margin-bottom: 1rem;
+  @apply grid gap-4 mb-4;
+  @apply grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5;
 }
 
 button {
-  background-color: #0070f3;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  margin-right: 0.5rem;
+  @apply bg-blue-500 text-white py-2 px-4 rounded-lg cursor-pointer;
 }
 
 button:hover {
-  background-color: #005bb5;
+  @apply bg-blue-600;
 }
-
