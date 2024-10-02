@@ -27,7 +27,7 @@ function getRandomPertDuration(to: number, tm: number, tp: number) {
   return alpha + sigma * (Math.random() - 0.5);
 }
 
-export default function MonteCarloAnalysis({ activities }: { activities: Activity[] }) {
+export default function MonteCarloAnalysis({ activities, onReset }: { activities: Activity[], onReset: () => void }) {
   const monteCarloIterations = 1000;
   const results: number[] = [];
 
@@ -199,7 +199,7 @@ export default function MonteCarloAnalysis({ activities }: { activities: Activit
   const { avgDuration, stdDev, percentiles, activitySummaries } = calculateMonteCarlo();
 
   return (
-    <div className="min-h-screen bg-cover max-w-[1500px] bg-no-repeat p-10" style={{ backgroundImage: 'url(/your-background-image.jpg)' }}>
+    <div className="min-h-screen bg-cover max-w-[1500px] bg-no-repeat p-10" >
       <div className="bg-white bg-opacity-80 p-8 rounded-lg shadow-lg max-w-6xl mx-auto">
         <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-blue-600">Resultados del Análisis PERT-CPM</h2>
         
@@ -283,6 +283,14 @@ export default function MonteCarloAnalysis({ activities }: { activities: Activit
               })}
             </tbody>
           </table>
+        </div>
+        <div className="text-center mt-8">
+          <button
+            onClick={onReset}
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-300"
+          >
+            Volver al formulario para otro cálculo
+          </button>
         </div>
       </div>
     </div>
