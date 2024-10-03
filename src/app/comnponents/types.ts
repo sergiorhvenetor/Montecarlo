@@ -22,4 +22,11 @@ export interface Activity {
   
   // Definimos CompleteActivity que combina Activity y ActivityResult
   export interface CompleteActivity extends Activity, ActivityResult {}
+
+  // Agregar esta declaración global
+declare module "jointjs" {
+  namespace shapes {
+    let custom: any;
+  }
+}
   
