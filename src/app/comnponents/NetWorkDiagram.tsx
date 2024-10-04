@@ -223,47 +223,49 @@ export default function NetworkDiagram({ activities }: NetworkDiagramProps) {
 
     // Añadir los elementos al gráfico
     graph.addCells(elements);
-
-    // Añadir las conexiones entre las actividades según la precedencia
-    activities.forEach((activity) => {
-      activity.precedence.forEach((prec) => {
-        const sourceIndex = activities.findIndex((a) => a.name === prec); // El predecesor es el source
-        const targetIndex = activities.findIndex(
-          (a) => a.name === activity.name
-        ); // El nodo actual es el target
-        if (sourceIndex !== -1 && targetIndex !== -1) {
-          const link = new joint.shapes.standard.Link({
-            source: { id: elements[sourceIndex].id }, // El nodo predecesor es el source
-            target: { id: elements[targetIndex].id }, // El nodo actual es el target
-            attrs: {
-              line: {
-                stroke:
-                  activity.totalFloat === 0 &&
-                  activities[sourceIndex].totalFloat === 0
-                    ? "#FF0000"
-                    : "#000", // Rojo para líneas entre actividades críticas
-                strokeWidth: 2,
-                targetMarker: {
-                  type: "path", // Tipo de marcador de flecha
-                  fill:
-                    activity.totalFloat === 0 &&
-                    activities[sourceIndex].totalFloat === 0
-                      ? "#FF0000"
-                      : "#000", // Rojo para la flecha entre actividades críticas
-                  stroke:
-                    activity.totalFloat === 0 &&
-                    activities[sourceIndex].totalFloat === 0
-                      ? "#FF0000"
-                      : "#000",
-                  d: "M 10 0 L 0 -5 L 0 5 Z", // Flecha que apunta desde el predecesor hacia el sucesor
-                },
-              },
+// Añadir las conexiones entre las actividades según la precedencia
+activities.forEach((activity) => {
+  activity.precedence.forEach((prec) => {
+    const sourceIndex = activities.findIndex((a) => a.name === prec); // El predecesor es el source
+    const targetIndex = activities.findIndex(
+      (a) => a.name === activity.name
+    ); // El nodo actual es el target
+    if (sourceIndex !== -1 && targetIndex !== -1) {
+      const link = new joint.shapes.standard.Link({
+        source: { id: elements[targetIndex].id }, // El nodo predecesor es el source
+        target: { id: elements[sourceIndex].id }, // El nodo actual es el target
+        attrs: {
+          line: {
+            stroke:
+              activity.totalFloat === 0 &&
+              activities[sourceIndex].totalFloat === 0
+                ? "#FF0000"
+                : "#000", // Rojo para líneas entre actividades críticas
+            strokeWidth: 2,
+            targetMarker: {
+              type: "path", // Tipo de marcador de flecha solo en el target
+              fill:
+                activity.totalFloat === 0 &&
+                activities[targetIndex].totalFloat === 0
+                  ? "#FF0000"
+                  : "#000", // Rojo para la flecha entre actividades críticas
+              stroke:
+                activity.totalFloat === 0 &&
+                activities[sourceIndex].totalFloat === 0
+                  ? "#FF0000"
+                  : "#000",
+              d: "M -10 0 L 0 -5 L 0 5 Z", // Flecha que apunta hacia el target
             },
-          });
-          graph.addCell(link);
-        }
+            sourceMarker: {
+              type: "none", // Eliminar el marcador en la punta del source
+            },
+          },
+        },
       });
-    });
+      graph.addCell(link);
+    }
+  });
+});
   }, [activities]);
 
   // Funciones para manejar el zoom manual con botones
