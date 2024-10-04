@@ -1,6 +1,7 @@
-'use client'
-
-import { useState } from 'react';
+'use client';
+import React, { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify"; // Importamos toast y el contenedor de react-toastify
+import 'react-toastify/dist/ReactToastify.css';
 
 type Activity = {
   name: string;
@@ -11,15 +12,44 @@ type Activity = {
   [key: string]: string | string[] | number;
 };
 
-export default function InputForm({ onSubmit }: { onSubmit: (activities: Activity[]) => void }) {
+export default function InputForm({
+  onSubmit,
+  savedActivities,
+}: {
+  onSubmit: (activities: Activity[]) => void;
+  savedActivities?: Activity[]; // Nuevo prop para pasar las actividades guardadas
+}) {
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [newActivity, setNewActivity] = useState<Activity>({ name: '', precedence: [], to: 0, tm: 0, tp: 0 });
+  const [newActivity, setNewActivity] = useState<Activity>({
+    name: "",
+    precedence: [],
+    to: 0,
+    tm: 0,
+    tp: 0,
+  });
+
+  useEffect(() => {
+    // Cargar datos guardados en localStorage si existen
+    if (savedActivities && savedActivities.length > 0) {
+      setActivities(savedActivities);
+    } else {
+      const storedActivities = localStorage.getItem("activities");
+      if (storedActivities) {
+        setActivities(JSON.parse(storedActivities));
+      }
+    }
+  }, [savedActivities]);
+
+  useEffect(() => {
+    // Guardar los datos actuales en localStorage
+    localStorage.setItem("activities", JSON.stringify(activities));
+  }, [activities]);
 
   const handleChange = (field: keyof Activity, value: string | number) => {
-    if (field === 'precedence') {
+    if (field === "precedence") {
       setNewActivity({
         ...newActivity,
-        [field]: (value as string).split(',').map((item) => item.trim()),
+        [field]: (value as string).split(",").map((item) => item.trim()),
       });
     } else {
       setNewActivity({
@@ -31,13 +61,19 @@ export default function InputForm({ onSubmit }: { onSubmit: (activities: Activit
 
   const addActivity = () => {
     setActivities([...activities, newActivity]);
-    setNewActivity({ name: '', precedence: [], to: 0, tm: 0, tp: 0 }); // Limpiar el formulario después de agregar
+    setNewActivity({ name: "", precedence: [], to: 0, tm: 0, tp: 0 }); // Limpiar el formulario después de agregar
   };
 
-  const handleEditActivity = (index: number, field: keyof Activity, value: string | number) => {
+  const handleEditActivity = (
+    index: number,
+    field: keyof Activity,
+    value: string | number
+  ) => {
     const updatedActivities = [...activities];
-    if (field === 'precedence') {
-      updatedActivities[index][field] = (value as string).split(',').map((item) => item.trim());
+    if (field === "precedence") {
+      updatedActivities[index][field] = (value as string)
+        .split(",")
+        .map((item) => item.trim());
     } else {
       updatedActivities[index][field] = value;
     }
@@ -53,7 +89,19 @@ export default function InputForm({ onSubmit }: { onSubmit: (activities: Activit
     onSubmit(activities);
   };
 
+  const handleClearData = () => {
+    // Mostrar confirmación antes de limpiar la data
+    if (window.confirm("¿Estás seguro de que deseas eliminar todos los datos? Esta acción no se puede deshacer.")) {
+      localStorage.removeItem("activities");
+      setActivities([]);
+      setNewActivity({ name: "", precedence: [], to: 0, tm: 0, tp: 0 }); // Limpiar el formulario
+      toast.success("Todos los datos han sido eliminados."); // Notificación de éxito usando react-toastify
+    }
+  };
+
   return (
+  <>
+    <ToastContainer /> {/* Contenedor de notificaciones */}
     <div className="bg-white p-6 rounded-lg shadow-lg space-y-4 max-w-2xl mx-auto mt-10">
       {/* Formulario para agregar nuevas actividades */}
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -62,22 +110,22 @@ export default function InputForm({ onSubmit }: { onSubmit: (activities: Activit
             type="text"
             placeholder="Nombre de la actividad"
             value={newActivity.name}
-            onChange={(e) => handleChange('name', e.target.value)}
+            onChange={(e) => handleChange("name", e.target.value)}
             required
             className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
             type="text"
             placeholder="Precedencia (ej. A,B,C)"
-            value={newActivity.precedence.join(',')}
-            onChange={(e) => handleChange('precedence', e.target.value)}
+            value={newActivity.precedence.join(",")}
+            onChange={(e) => handleChange("precedence", e.target.value)}
             className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
             type="number"
             placeholder="To"
             value={newActivity.to}
-            onChange={(e) => handleChange('to', parseFloat(e.target.value))}
+            onChange={(e) => handleChange("to", parseFloat(e.target.value))}
             required
             className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -85,7 +133,7 @@ export default function InputForm({ onSubmit }: { onSubmit: (activities: Activit
             type="number"
             placeholder="Tm"
             value={newActivity.tm}
-            onChange={(e) => handleChange('tm', parseFloat(e.target.value))}
+            onChange={(e) => handleChange("tm", parseFloat(e.target.value))}
             required
             className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -93,7 +141,7 @@ export default function InputForm({ onSubmit }: { onSubmit: (activities: Activit
             type="number"
             placeholder="Tp"
             value={newActivity.tp}
-            onChange={(e) => handleChange('tp', parseFloat(e.target.value))}
+            onChange={(e) => handleChange("tp", parseFloat(e.target.value))}
             required
             className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -129,15 +177,19 @@ export default function InputForm({ onSubmit }: { onSubmit: (activities: Activit
                     <input
                       type="text"
                       value={activity.name}
-                      onChange={(e) => handleEditActivity(index, 'name', e.target.value)}
+                      onChange={(e) =>
+                        handleEditActivity(index, "name", e.target.value)
+                      }
                       className="border border-gray-300 rounded-lg p-1 w-full"
                     />
                   </td>
                   <td className="border px-4 py-2">
                     <input
                       type="text"
-                      value={activity.precedence.join(',')}
-                      onChange={(e) => handleEditActivity(index, 'precedence', e.target.value)}
+                      value={activity.precedence.join(",")}
+                      onChange={(e) =>
+                        handleEditActivity(index, "precedence", e.target.value)
+                      }
                       className="border border-gray-300 rounded-lg p-1 w-full"
                     />
                   </td>
@@ -145,7 +197,9 @@ export default function InputForm({ onSubmit }: { onSubmit: (activities: Activit
                     <input
                       type="number"
                       value={activity.to}
-                      onChange={(e) => handleEditActivity(index, 'to', parseFloat(e.target.value))}
+                      onChange={(e) =>
+                        handleEditActivity(index, "to", parseFloat(e.target.value))
+                      }
                       className="border border-gray-300 rounded-lg p-1 w-full"
                     />
                   </td>
@@ -153,7 +207,9 @@ export default function InputForm({ onSubmit }: { onSubmit: (activities: Activit
                     <input
                       type="number"
                       value={activity.tm}
-                      onChange={(e) => handleEditActivity(index, 'tm', parseFloat(e.target.value))}
+                      onChange={(e) =>
+                        handleEditActivity(index, "tm", parseFloat(e.target.value))
+                      }
                       className="border border-gray-300 rounded-lg p-1 w-full"
                     />
                   </td>
@@ -161,7 +217,9 @@ export default function InputForm({ onSubmit }: { onSubmit: (activities: Activit
                     <input
                       type="number"
                       value={activity.tp}
-                      onChange={(e) => handleEditActivity(index, 'tp', parseFloat(e.target.value))}
+                      onChange={(e) =>
+                        handleEditActivity(index, "tp", parseFloat(e.target.value))
+                      }
                       className="border border-gray-300 rounded-lg p-1 w-full"
                     />
                   </td>
@@ -177,7 +235,13 @@ export default function InputForm({ onSubmit }: { onSubmit: (activities: Activit
               ))}
             </tbody>
           </table>
-          <div className="mt-4 text-right">
+          <div className="mt-4 flex justify-between">
+            <button
+              onClick={handleClearData}
+              className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors duration-300"
+            >
+              Limpiar todo
+            </button>
             <button
               onClick={handleSubmit}
               className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-300"
@@ -188,5 +252,6 @@ export default function InputForm({ onSubmit }: { onSubmit: (activities: Activit
         </div>
       )}
     </div>
+    </>
   );
 }
