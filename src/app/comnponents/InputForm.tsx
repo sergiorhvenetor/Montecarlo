@@ -123,24 +123,24 @@ export default function InputForm({
           />
           <input
             type="number"
-            placeholder="To"
-            value={newActivity.to}
+            placeholder="To (Optimista)"
+            value={newActivity.to || ""}
             onChange={(e) => handleChange("to", parseFloat(e.target.value))}
             required
             className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
             type="number"
-            placeholder="Tm"
-            value={newActivity.tm}
+            placeholder="Tm (Más probable)"
+            value={newActivity.tm || ""}
             onChange={(e) => handleChange("tm", parseFloat(e.target.value))}
             required
             className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
             type="number"
-            placeholder="Tp"
-            value={newActivity.tp}
+            placeholder="Tp (Pesimista)"
+            value={newActivity.tp || ""}
             onChange={(e) => handleChange("tp", parseFloat(e.target.value))}
             required
             className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"

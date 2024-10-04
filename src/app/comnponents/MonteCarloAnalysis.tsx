@@ -31,11 +31,11 @@ function getRandomPertDuration(to: number, tm: number, tp: number) {
 export default function MonteCarloAnalysis({
   activities,
   onReset,
-  onEdit, // Pasar la función para editar y volver al InputForm
+  onEdit,
 }: {
   activities: Activity[];
   onReset: () => void;
-  onEdit: (activities: Activity[]) => void; // Nuevo prop para manejar la edición
+  onEdit: (activities: Activity[]) => void;
 }) {
   const monteCarloIterations = 1000;
   const results: number[] = [];
@@ -247,6 +247,15 @@ export default function MonteCarloAnalysis({
   const { avgDuration, stdDev, percentiles, activitySummaries } =
     calculateMonteCarlo();
 
+  // Calcular desviación estándar del proyecto usando solo actividades críticas
+  const criticalPathStdDev = activityResults
+    .filter((activity) => activity.isCritical)
+    .reduce((acc, activity) => acc + activity.stdDeviation, 0);
+
+  const totalProjectDuration = Math.max(
+    ...activityResults.map((a) => a.earliestFinish)
+  );
+
   return (
     <div className="min-h-screen bg-cover max-w-[1300px] bg-no-repeat p-10">
       <div className="bg-white bg-opacity-80 p-8 rounded-lg shadow-lg max-w-6xl mx-auto">
@@ -262,9 +271,7 @@ export default function MonteCarloAnalysis({
                 <th className="px-2 py-2 md:px-4">Duración</th>
                 <th className="px-2 py-2 md:px-4">Desviación Estándar</th>
                 <th className="px-2 py-2 md:px-4">Inicio Temprano (ES)</th>
-                <th className="px-2 py-2 md:px-4">
-                  Finalización Temprana (EF)
-                </th>
+                <th className="px-2 py-2 md:px-4">Finalización Temprana (EF)</th>
                 <th className="px-2 py-2 md:px-4">Inicio Tardío (LS)</th>
                 <th className="px-2 py-2 md:px-4">Finalización Tardía (LF)</th>
                 <th className="px-2 py-2 md:px-4">Holgura Total</th>
@@ -310,54 +317,51 @@ export default function MonteCarloAnalysis({
               ))}
             </tbody>
           </table>
-          <div>
-            <h3 className="text-2xl md:text-3xl font-bold my-6 text-center text-blue-600">
-              Diagrama de Red
-            </h3>
-            <NetworkDiagram
-              activities={activityResults.map((activity, index) => ({
-                id: `ID: ${index}`, // Generar un ID único si no tienes uno.
-                name: activity.name,
-                precedence: activity.successors,
-                duration: activity.duration,
-                to:
-                  activities.find((act) => act.name === activity.name)?.to || 0, // Asegúrate de extraer el valor correcto.
-                tm:
-                  activities.find((act) => act.name === activity.name)?.tm || 0,
-                tp:
-                  activities.find((act) => act.name === activity.name)?.tp || 0,
-                earliestStart: activity.earliestStart,
-                earliestFinish: activity.earliestFinish,
-                latestStart: activity.latestStart,
-                latestFinish: activity.latestFinish,
-                totalFloat: activity.totalFloat,
-                freeFloat: activity.totalFloat, // Puedes cambiar esta lógica según cómo se calcula el Free Float.
-                isCritical: activity.isCritical,
-                successors: activity.successors,
-              }))}
-            />
+          
+          {/* Duración total y desviación estándar del proyecto */}
+          <div className="mt-4 text-lg font-semibold text-gray-800">
+            La duración del proyecto es: {totalProjectDuration.toFixed(2)} días con una desviación estándar basada en los tres puntos de: ±{criticalPathStdDev.toFixed(2)}
           </div>
+          
+          <h3 className="text-2xl md:text-3xl font-bold my-6 text-center text-blue-600">
+            Diagrama de Red
+          </h3>
+          <NetworkDiagram
+            activities={activityResults.map((activity, index) => ({
+              id: `ID: ${index}`,
+              name: activity.name,
+              precedence: activity.successors,
+              duration: activity.duration,
+              to: activities.find((act) => act.name === activity.name)?.to || 0,
+              tm: activities.find((act) => act.name === activity.name)?.tm || 0,
+              tp: activities.find((act) => act.name === activity.name)?.tp || 0,
+              earliestStart: activity.earliestStart,
+              earliestFinish: activity.earliestFinish,
+              latestStart: activity.latestStart,
+              latestFinish: activity.latestFinish,
+              totalFloat: activity.totalFloat,
+              freeFloat: activity.totalFloat,
+              isCritical: activity.isCritical,
+              successors: activity.successors,
+            }))}
+          />
         </div>
 
         <h3 className="text-2xl md:text-3xl font-bold my-6 text-center text-blue-600">
           Resultados del Análisis Monte Carlo
         </h3>
         <p className="text-sm md:text-lg text-center mb-4">
-          <strong>Duración promedio del proyecto:</strong>{" "}
-          {avgDuration.toFixed(2)} días
+          <strong>Duración promedio del proyecto:</strong> {avgDuration.toFixed(2)} días
         </p>
         <p className="text-sm md:text-lg text-center mb-4">
-          <strong>Desviación estándar de las duraciones:</strong>{" "}
-          {stdDev.toFixed(2)} días
+          <strong>Desviación estándar de las duraciones:</strong> {stdDev.toFixed(2)} días
         </p>
         <p className="text-sm md:text-lg text-center mb-4">
-          <strong>Percentil 50 (Mediana):</strong> {percentiles(50).toFixed(2)}{" "}
-          días
+          <strong>Percentil 50 (Mediana):</strong> {percentiles(50).toFixed(2)} días
         </p>
         <p className="text-sm md:text-lg text-center mb-4">
           <strong>Percentil 90:</strong> {percentiles(90).toFixed(2)} días
         </p>
-
         <h4 className="text-2xl md:text-3xl font-bold my-4 text-center text-blue-600">
           Detalles de las Actividades (Monte Carlo)
         </h4>
