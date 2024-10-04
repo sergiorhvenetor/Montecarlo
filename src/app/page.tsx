@@ -13,13 +13,21 @@ type Activity = {
 
 export default function Home() {
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [isAnalysisMode, setIsAnalysisMode] = useState(false);
 
   const handleFormSubmit = (activitiesData: Activity[]) => {
     setActivities(activitiesData);
+    setIsAnalysisMode(true); // Cambiar al modo de análisis
   };
 
   const handleReset = () => {
-    setActivities([]); // Reiniciar el estado para mostrar el formulario
+    setActivities([]); // Reiniciar el estado para mostrar el formulario vacío
+    setIsAnalysisMode(false);
+  };
+
+  const handleEdit = (editedActivities: Activity[]) => {
+    setActivities(editedActivities); // Mantener las actividades actuales
+    setIsAnalysisMode(false); // Volver al formulario de edición
   };
 
   return (
@@ -28,10 +36,14 @@ export default function Home() {
         <h1 className="text-2xl sm:text-4xl font-bold text-center text-blue-600 mb-6 sm:mb-8">
           Análisis PERT-CPM con Monte Carlo
         </h1>
-        {activities.length === 0 ? (
-          <InputForm onSubmit={handleFormSubmit} />
+        {!isAnalysisMode ? (
+          <InputForm onSubmit={handleFormSubmit} savedActivities={activities} />
         ) : (
-          <MonteCarloAnalysis activities={activities} onReset={handleReset} />
+          <MonteCarloAnalysis
+            activities={activities}
+            onReset={handleReset}
+            onEdit={handleEdit} // Pasar la función onEdit para editar las actividades
+          />
         )}
       </div>
     </div>

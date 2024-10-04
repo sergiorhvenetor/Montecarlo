@@ -31,9 +31,11 @@ function getRandomPertDuration(to: number, tm: number, tp: number) {
 export default function MonteCarloAnalysis({
   activities,
   onReset,
+  onEdit, // Pasar la función para editar y volver al InputForm
 }: {
   activities: Activity[];
   onReset: () => void;
+  onEdit: (activities: Activity[]) => void; // Nuevo prop para manejar la edición
 }) {
   const monteCarloIterations = 1000;
   const results: number[] = [];
@@ -309,29 +311,31 @@ export default function MonteCarloAnalysis({
             </tbody>
           </table>
           <div>
-          {/* Renderizar el NetworkDiagram con las actividades calculadas */}
-          <h3 className="text-2xl md:text-3xl font-bold my-6 text-center text-blue-600">
-            Diagrama de Red
-          </h3>
-          <NetworkDiagram
-            activities={activityResults.map((activity, index) => ({
-              id: `ID: ${index}`, // Generar un ID único si no tienes uno.
-              name: activity.name,
-              precedence: activity.successors,
-              duration: activity.duration,
-              to: activities.find((act) => act.name === activity.name)?.to || 0, // Asegúrate de extraer el valor correcto.
-              tm: activities.find((act) => act.name === activity.name)?.tm || 0,
-              tp: activities.find((act) => act.name === activity.name)?.tp || 0,
-              earliestStart: activity.earliestStart,
-              earliestFinish: activity.earliestFinish,
-              latestStart: activity.latestStart,
-              latestFinish: activity.latestFinish,
-              totalFloat: activity.totalFloat,
-              freeFloat: activity.totalFloat, // Puedes cambiar esta lógica según cómo se calcula el Free Float.
-              isCritical: activity.isCritical,
-              successors: activity.successors
-            }))}
-          />
+            <h3 className="text-2xl md:text-3xl font-bold my-6 text-center text-blue-600">
+              Diagrama de Red
+            </h3>
+            <NetworkDiagram
+              activities={activityResults.map((activity, index) => ({
+                id: `ID: ${index}`, // Generar un ID único si no tienes uno.
+                name: activity.name,
+                precedence: activity.successors,
+                duration: activity.duration,
+                to:
+                  activities.find((act) => act.name === activity.name)?.to || 0, // Asegúrate de extraer el valor correcto.
+                tm:
+                  activities.find((act) => act.name === activity.name)?.tm || 0,
+                tp:
+                  activities.find((act) => act.name === activity.name)?.tp || 0,
+                earliestStart: activity.earliestStart,
+                earliestFinish: activity.earliestFinish,
+                latestStart: activity.latestStart,
+                latestFinish: activity.latestFinish,
+                totalFloat: activity.totalFloat,
+                freeFloat: activity.totalFloat, // Puedes cambiar esta lógica según cómo se calcula el Free Float.
+                isCritical: activity.isCritical,
+                successors: activity.successors,
+              }))}
+            />
           </div>
         </div>
 
@@ -416,12 +420,22 @@ export default function MonteCarloAnalysis({
             </tbody>
           </table>
         </div>
+
+        {/* Botón para reiniciar y limpiar el formulario */}
         <div className="text-center mt-8">
           <button
             onClick={onReset}
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-300"
           >
             Volver al formulario para otro cálculo
+          </button>
+
+          {/* Nuevo botón para editar los datos y volver al formulario */}
+          <button
+            onClick={() => onEdit(activities)} // Usar la función onEdit para volver al formulario
+            className="bg-green-500 text-white px-4 py-2 ml-4 rounded-lg hover:bg-green-600 transition-colors duration-300"
+          >
+            Editar datos actuales
           </button>
         </div>
       </div>
