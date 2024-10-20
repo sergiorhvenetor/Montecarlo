@@ -205,13 +205,13 @@ export default function NetworkDiagram({ activities }: NetworkDiagramProps) {
           '.rect9': { fill: criticalColor, stroke: activity.totalFloat === 0 ? "#ed280e" : "#0e3fed" },
     
           // Actualizar el contenido de cada rectángulo con los datos correspondientes
-          '.es-text': {  text: `ES: ${activity.earliestStart || 0}` },
-          '.ef-text': {  text: `EF: ${activity.earliestFinish || 0}` },
-          '.ls-text': {  text: `LS: ${activity.latestStart || 0}` },
-          '.lf-text': {  text: `LF: ${activity.latestFinish || 0}` },
-          '.tf-text': { text: `TF: ${activity.totalFloat.toFixed(3)}` },
-          '.ff-text': {  text: `FF: ${activity.totalFloat.toFixed(3)}` }, // Puedes usar otro valor si FF es diferente
-          '.dur-text': {  text: `Dur: ${activity.duration || 0}` },
+          '.es-text': {  text: `ES: ${activity.earliestStart.toFixed(2) || 0}` },
+          '.ef-text': {  text: `EF: ${activity.earliestFinish.toFixed(2) || 0}` },
+          '.ls-text': {  text: `LS: ${activity.latestStart.toFixed(2) || 0}` },
+          '.lf-text': {  text: `LF: ${activity.latestFinish.toFixed(2) || 0}` },
+          '.tf-text': { text: `TF: ${activity.totalFloat.toFixed(2)}` },
+          '.ff-text': {  text: `FF: ${activity.totalFloat.toFixed(2)}` }, // Puedes usar otro valor si FF es diferente
+          '.dur-text': {  text: `Dur: ${activity.duration.toFixed(2) || 0}` },
           '.name-text': { fill:nameColor, text: activity.name || 'No Name' },
           '.id-text': {  text: activity.id || 'No Name' },
         },
