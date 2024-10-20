@@ -2,9 +2,9 @@ export interface Activity {
     id: string;
     name: string;
     precedence: string[];
-    to: number;
-    tm: number;
-    tp: number;
+    to?: number;
+    tm?: number;
+    tp?: number;
   }
   
   export interface ActivityResult {

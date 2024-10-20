@@ -515,7 +515,7 @@ export default function MonteCarloAnalysis({
                 onClick={onReset}
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-300"
               >
-                Volver al formulario para otro cálculo
+                Volver a escoger metodo
               </button>
 
               {/* Nuevo botón para editar los datos y volver al formulario */}
