@@ -69,6 +69,11 @@ export default function InputForm({
   };
 
   const addActivity = () => {
+    if (!newActivity.name) {
+      toast.error("El nombre de la actividad es obligatorio");
+      return;
+    }
+
     setActivities([...activities, { ...newActivity, id: uuidv4() }]);
     setNewActivity({ id: uuidv4(), name: "", precedence: [] });
     toast.success("Actividad agregada correctamente.");
@@ -92,6 +97,10 @@ export default function InputForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (activities.length === 0) {
+      toast.error("Debe agregar al menos una actividad antes de realizar el análisis.");
+      return;
+    }
     onSubmit(activities);
   };
 
@@ -235,7 +244,7 @@ export default function InputForm({
                             type="number"
                             value={activity.to || ""}
                             onChange={(e) =>
-                              handleEditActivity(index, "to", e.target.value)
+                              handleEditActivity(index, "to", e.target.value === "" ? undefined : parseFloat(e.target.value))
                             }
                             className="border border-gray-300 rounded-lg p-1 w-full"
                           />
@@ -245,7 +254,7 @@ export default function InputForm({
                             type="number"
                             value={activity.tm || ""}
                             onChange={(e) =>
-                              handleEditActivity(index, "tm", e.target.value)
+                              handleEditActivity(index, "tm", e.target.value === "" ? undefined : parseFloat(e.target.value))
                             }
                             className="border border-gray-300 rounded-lg p-1 w-full"
                           />
@@ -255,7 +264,7 @@ export default function InputForm({
                             type="number"
                             value={activity.tp || ""}
                             onChange={(e) =>
-                              handleEditActivity(index, "tp", e.target.value)
+                              handleEditActivity(index, "tp", e.target.value === "" ? undefined : parseFloat(e.target.value))
                             }
                             className="border border-gray-300 rounded-lg p-1 w-full"
                           />
@@ -267,7 +276,7 @@ export default function InputForm({
                           type="number"
                           value={activity.duration || ""}
                           onChange={(e) =>
-                            handleEditActivity(index, "duration", e.target.value)
+                            handleEditActivity(index, "duration", e.target.value === "" ? undefined : parseFloat(e.target.value))
                           }
                           className="border border-gray-300 rounded-lg p-1 w-full"
                         />

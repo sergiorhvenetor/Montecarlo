@@ -3,12 +3,14 @@ import React, { useState } from "react";
 import GanttDeterministic from "./GanttDeterministic";
 import NetworkDiagram from "./NetWorkDiagram";
 
+// Definir el tipo de actividad básica
 type Activity = {
   name: string;
   precedence: string[];
   duration: number;
 };
 
+// Resultados del análisis de la actividad (CPM)
 type ActivityResult = {
   name: string;
   duration: number;
@@ -21,6 +23,7 @@ type ActivityResult = {
   successors: string[];
 };
 
+// Actividad completa con datos adicionales
 type CompleteActivity = {
   id: string;
   name: string;
@@ -41,26 +44,27 @@ type CompleteActivity = {
 export default function CPMDeterministic({
   activities,
   onReset,
+  onEdit,
 }: {
   activities: Activity[];
   onReset: () => void;
+  onEdit: (activities: Activity[]) => void;
 }) {
   const [viewType, setViewType] = useState<"gantt" | "network">("gantt");
 
-  const calculateCPM = () => {
+  // Función para calcular CPM
+  const calculateCPM = (): ActivityResult[] => {
     const activityResults: ActivityResult[] = [];
 
+    // Calcular el CPM para cada actividad
     activities.forEach((activity) => {
-      const precedenceActivities = activity.precedence.map((prec: string) =>
+      const precedenceActivities = activity.precedence.map((prec) =>
         activityResults.find((res) => res?.name === prec)
       );
 
-      const earliestStart =
-        precedenceActivities.length > 0
-          ? Math.max(
-              ...precedenceActivities.map((res) => res?.earliestFinish || 0)
-            )
-          : 0;
+      const earliestStart = precedenceActivities.length
+        ? Math.max(...precedenceActivities.map((res) => res?.earliestFinish || 0))
+        : 0;
       const earliestFinish = earliestStart + activity.duration;
 
       activityResults.push({
@@ -76,8 +80,9 @@ export default function CPMDeterministic({
       });
     });
 
+    // Establecer sucesores
     activities.forEach((activity) => {
-      activity.precedence.forEach((prec: string) => {
+      activity.precedence.forEach((prec) => {
         const predecessor = activityResults.find((act) => act.name === prec);
         if (predecessor) {
           predecessor.successors.push(activity.name);
@@ -85,9 +90,8 @@ export default function CPMDeterministic({
       });
     });
 
-    const totalProjectDuration = Math.max(
-      ...activityResults.map((a) => a.earliestFinish)
-    );
+    // Calcular finalización tardía y holgura total
+    const totalProjectDuration = Math.max(...activityResults.map((a) => a.earliestFinish));
 
     activityResults.forEach((activity) => {
       activity.latestFinish = totalProjectDuration;
@@ -99,14 +103,11 @@ export default function CPMDeterministic({
       updated = false;
       activityResults.forEach((activity) => {
         if (activity.successors.length > 0) {
-          const successorResults = activity.successors.map((succ: string) =>
+          const successorResults = activity.successors.map((succ) =>
             activityResults.find((res) => res?.name === succ)
           );
-
           const minLatestStart = Math.min(
-            ...successorResults.map(
-              (res) => res?.latestStart || totalProjectDuration
-            )
+            ...successorResults.map((res) => res?.latestStart || totalProjectDuration)
           );
           if (minLatestStart < activity.latestFinish) {
             activity.latestFinish = minLatestStart;
@@ -117,44 +118,40 @@ export default function CPMDeterministic({
       });
     }
 
+    // Marcar actividades críticas y calcular holguras
     activityResults.forEach((activity) => {
-      activity.totalFloat = parseFloat(
-        (activity.latestStart - activity.earliestStart).toFixed(2)
-      );
+      activity.totalFloat = parseFloat((activity.latestStart - activity.earliestStart).toFixed(2));
       activity.isCritical = activity.totalFloat === 0;
     });
 
     return activityResults;
   };
 
+  // Ejecutar cálculo CPM y obtener los resultados
   const activityResults = calculateCPM();
-  const totalProjectDuration = Math.max(
-    ...activityResults.map((a) => a.earliestFinish)
-  );
+  const totalProjectDuration = Math.max(...activityResults.map((a) => a.earliestFinish));
 
   const handleViewChange = (view: "gantt" | "network") => {
     setViewType(view);
   };
 
-  // Mapeamos a CompleteActivity agregando las propiedades que faltan
-  const completeActivityResults: CompleteActivity[] = activityResults.map(
-    (activity, index) => ({
-      id: `ID-${index}`,
-      name: activity.name,
-      precedence: activity.successors,
-      duration: activity.duration,
-      earliestStart: activity.earliestStart,
-      earliestFinish: activity.earliestFinish,
-      latestStart: activity.latestStart,
-      latestFinish: activity.latestFinish,
-      totalFloat: activity.totalFloat,
-      isCritical: activity.isCritical,
-      to: 0, // Valor por defecto
-      tm: 0, // Valor por defecto
-      tp: 0, // Valor por defecto
-      successors: activity.successors,
-    })
-  );
+  // Mapear los resultados completos de actividades
+  const completeActivityResults: CompleteActivity[] = activityResults.map((activity, index) => ({
+    id: `ID-${index}`,
+    name: activity.name,
+    precedence: activity.successors,
+    duration: activity.duration,
+    earliestStart: activity.earliestStart,
+    earliestFinish: activity.earliestFinish,
+    latestStart: activity.latestStart,
+    latestFinish: activity.latestFinish,
+    totalFloat: activity.totalFloat,
+    isCritical: activity.isCritical,
+    to: 0, // Valor por defecto
+    tm: 0, // Valor por defecto
+    tp: 0, // Valor por defecto
+    successors: activity.successors,
+  }));
 
   return (
     <div className="min-h-screen bg-cover max-w-[1300px] bg-no-repeat p-10">
@@ -163,7 +160,7 @@ export default function CPMDeterministic({
           Resultados del Análisis CPM (Determinista)
         </h2>
 
-        {/* Mostrar los resultados del análisis */}
+        {/* Mostrar resultados del análisis */}
         <div className="overflow-x-auto">
           <table className="table-auto w-full bg-white rounded-lg shadow-lg overflow-hidden text-xs md:text-base">
             <thead>
@@ -182,34 +179,16 @@ export default function CPMDeterministic({
               {activityResults.map((activity) => (
                 <tr
                   key={activity.name}
-                  className={`text-center ${
-                    activity.isCritical
-                      ? "text-red-600 font-bold"
-                      : "text-gray-700"
-                  }`}
+                  className={`text-center ${activity.isCritical ? "text-red-600 font-bold" : "text-gray-700"}`}
                 >
                   <td className="border px-2 py-2 md:px-4">{activity.name}</td>
-                  <td className="border px-2 py-2 md:px-4">
-                    {activity.duration.toFixed(2)}
-                  </td>
-                  <td className="border px-2 py-2 md:px-4">
-                    {activity.earliestStart.toFixed(2)}
-                  </td>
-                  <td className="border px-2 py-2 md:px-4">
-                    {activity.earliestFinish.toFixed(2)}
-                  </td>
-                  <td className="border px-2 py-2 md:px-4">
-                    {activity.latestStart.toFixed(2)}
-                  </td>
-                  <td className="border px-2 py-2 md:px-4">
-                    {activity.latestFinish.toFixed(2)}
-                  </td>
-                  <td className="border px-2 py-2 md:px-4">
-                    {activity.totalFloat.toFixed(2)}
-                  </td>
-                  <td className="border px-2 py-2 md:px-4">
-                    {activity.isCritical ? "Sí" : "No"}
-                  </td>
+                  <td className="border px-2 py-2 md:px-4">{activity.duration.toFixed(2)}</td>
+                  <td className="border px-2 py-2 md:px-4">{activity.earliestStart.toFixed(2)}</td>
+                  <td className="border px-2 py-2 md:px-4">{activity.earliestFinish.toFixed(2)}</td>
+                  <td className="border px-2 py-2 md:px-4">{activity.latestStart.toFixed(2)}</td>
+                  <td className="border px-2 py-2 md:px-4">{activity.latestFinish.toFixed(2)}</td>
+                  <td className="border px-2 py-2 md:px-4">{activity.totalFloat.toFixed(2)}</td>
+                  <td className="border px-2 py-2 md:px-4">{activity.isCritical ? "Sí" : "No"}</td>
                 </tr>
               ))}
             </tbody>
@@ -226,9 +205,7 @@ export default function CPMDeterministic({
               onClick={() => handleViewChange("gantt")}
               disabled={viewType === "gantt"}
               className={`px-4 py-2 mr-2 rounded-lg ${
-                viewType === "gantt"
-                  ? "bg-gray-500 text-white"
-                  : "bg-blue-600 text-white"
+                viewType === "gantt" ? "bg-gray-500 text-white" : "bg-blue-600 text-white"
               }`}
             >
               Ver Gantt
@@ -237,29 +214,33 @@ export default function CPMDeterministic({
               onClick={() => handleViewChange("network")}
               disabled={viewType === "network"}
               className={`px-4 py-2 ml-2 rounded-lg ${
-                viewType === "network"
-                  ? "bg-gray-500 text-white"
-                  : "bg-blue-600 text-white"
+                viewType === "network" ? "bg-gray-500 text-white" : "bg-blue-600 text-white"
               }`}
             >
               Ver Diagrama de Red
             </button>
           </div>
 
-          {/* Renderizar el diagrama correspondiente */}
+          {/* Renderizar diagrama correspondiente */}
           {viewType === "gantt" ? (
             <GanttDeterministic activities={completeActivityResults} />
           ) : (
             <NetworkDiagram activities={completeActivityResults} />
           )}
 
-          {/* Botón para reiniciar */}
+          {/* Botones de acción */}
           <div className="text-center mt-8">
             <button
               onClick={onReset}
               className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-300"
             >
-              Volver a escoger metodo
+              Volver a escoger método
+            </button>
+            <button
+              onClick={() => onEdit(activities)}
+              className="bg-green-500 text-white px-4 py-2 ml-4 rounded-lg hover:bg-green-600 transition-colors duration-300"
+            >
+              Editar datos actuales
             </button>
           </div>
         </div>
